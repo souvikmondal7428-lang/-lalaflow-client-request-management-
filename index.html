@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LalaFlow — Client Request Management Core</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Three.js CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Ambient Animated Background Grid & Radial Glows -->
+  <div class="bg-container">
+    <div class="bg-radial glow-cyan"></div>
+    <div class="bg-radial glow-blue"></div>
+    <div class="bg-radial glow-purple"></div>
+    <div class="bg-grid"></div>
+    <canvas id="bg-particles-canvas"></canvas>
+  </div>
+
+  <!-- Cursor Follower Glow -->
+  <div class="cursor-glow" id="cursorGlow"></div>
+
+  <!-- Main Wrapper -->
+  <div class="app-wrapper">
+
+    <!-- FLOATING GLASS NAVBAR -->
+    <nav class="navbar glass-panel">
+      <div class="nav-container">
+        <a href="#" class="brand-logo">
+          <div class="logo-icon-wrap">
+            <i class="fa-solid fa-diagram-project logo-icon"></i>
+            <span class="logo-pulse"></span>
+          </div>
+          <span class="brand-name">Lala<span class="text-gradient">Flow</span></span>
+          <span class="version-badge">v3.0 3D</span>
+        </a>
+
+        <div class="nav-links">
+          <a href="#dashboard" class="nav-link active"><i class="fa-solid fa-chart-pie"></i> Dashboard</a>
+          <a href="#workflow" class="nav-link"><i class="fa-solid fa-arrows-split-up-and-left"></i> Workflow</a>
+          <a href="#requests" class="nav-link"><i class="fa-solid fa-list-check"></i> Requests</a>
+          <a href="#analytics" class="nav-link"><i class="fa-solid fa-bolt"></i> SLA Monitor</a>
+        </div>
+
+        <div class="nav-actions">
+          <div class="system-status">
+            <span class="status-dot online"></span>
+            <span class="status-text">System Online</span>
+          </div>
+          <button class="btn btn-primary magnetic-btn" id="btnOpenNewRequest">
+            <i class="fa-solid fa-plus"></i>
+            <span>New Request</span>
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <!-- HERO SECTION — 3D EXPERIENCE -->
+    <section class="hero-section" id="hero">
+      <div class="hero-parallax-wrapper">
+        <div class="hero-content">
+          <div class="hero-badge">
+            <i class="fa-solid fa-shield-halved"></i> Next-Gen Request Operations Core
+          </div>
+          <h1 class="hero-title">
+            Streamline Client Requests with <span class="text-gradient">3D Precision</span>
+          </h1>
+          <p class="hero-subtitle">
+            Enterprise request lifecycle management powered by real-time SLA tracking, automated assignment queues, and proactive client bottleneck resolution.
+          </p>
+
+          <div class="hero-cta-group">
+            <button class="btn btn-primary btn-lg magnetic-btn" onclick="document.getElementById('requests').scrollIntoView({behavior: 'smooth'})">
+              <i class="fa-solid fa-compass"></i> Explore Requests Pipeline
+            </button>
+            <button class="btn btn-glass btn-lg magnetic-btn" onclick="document.getElementById('workflow').scrollIntoView({behavior: 'smooth'})">
+              <i class="fa-solid fa-play"></i> View 3D Workflow
+            </button>
+          </div>
+
+          <div class="hero-stats-ticker">
+            <div class="ticker-item">
+              <span class="ticker-value" id="heroAvgSla">98.4%</span>
+              <span class="ticker-label">SLA Compliance</span>
+            </div>
+            <div class="ticker-divider"></div>
+            <div class="ticker-item">
+              <span class="ticker-value" id="heroResponseTime">1.4h</span>
+              <span class="ticker-label">Avg First Response</span>
+            </div>
+            <div class="ticker-divider"></div>
+            <div class="ticker-item">
+              <span class="ticker-value text-cyan" id="heroActiveTotal">24</span>
+              <span class="ticker-label">Active Workflows</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3D HERO CANVAS & FLOATING 3D CARDS -->
+        <div class="hero-3d-viewport" id="hero3DViewport">
+          <!-- Three.js Canvas Container -->
+          <div id="three-orb-container" class="orb-container"></div>
+
+          <!-- FLOATING 3D GLASS CARDS OVERLAID IN 3D SPACE -->
+          <div class="floating-cards-layer">
+            
+            <!-- Main Core Center Glass Badge -->
+            <div class="hero-float-card card-center-core tilt-card" data-depth="0.4">
+              <div class="core-card-header">
+                <i class="fa-solid fa-atom text-cyan"></i>
+                <span>MANAGEMENT CORE</span>
+              </div>
+              <div class="core-card-body">
+                <span class="core-card-number text-gradient" id="statCoreActive">24</span>
+                <span class="core-card-label">ACTIVE REQUESTS</span>
+              </div>
+              <div class="core-pulse-ring"></div>
+            </div>
+
+            <!-- Float Card 1: Waiting for Client -->
+            <div class="hero-float-card float-card-1 tilt-card" data-depth="0.6">
+              <div class="float-card-icon icon-blue">
+                <i class="fa-solid fa-user-clock"></i>
+              </div>
+              <div class="float-card-details">
+                <span class="float-card-title">WAITING FOR CLIENT</span>
+                <span class="float-card-value text-blue" id="heroStatWaitingClient">08</span>
+                <span class="float-card-sub"><i class="fa-solid fa-pause-circle"></i> SLA Timer Paused</span>
+              </div>
+            </div>
+
+            <!-- Float Card 2: Waiting for Us -->
+            <div class="hero-float-card float-card-2 tilt-card" data-depth="0.8">
+              <div class="float-card-icon icon-cyan">
+                <i class="fa-solid fa-headset"></i>
+              </div>
+              <div class="float-card-details">
+                <span class="float-card-title">WAITING FOR US</span>
+                <span class="float-card-value text-cyan" id="heroStatWaitingUs">05</span>
+                <span class="float-card-sub"><i class="fa-solid fa-clock"></i> Action Needed</span>
+              </div>
+            </div>
+
+            <!-- Float Card 3: Unassigned -->
+            <div class="hero-float-card float-card-3 tilt-card" data-depth="0.5">
+              <div class="float-card-icon icon-purple">
+                <i class="fa-solid fa-user-plus"></i>
+              </div>
+              <div class="float-card-details">
+                <span class="float-card-title">UNASSIGNED</span>
+                <span class="float-card-value text-purple" id="heroStatUnassigned">04</span>
+                <span class="float-card-sub"><i class="fa-solid fa-inbox"></i> Needs Allocation</span>
+              </div>
+            </div>
+
+            <!-- Float Card 4: Overdue -->
+            <div class="hero-float-card float-card-4 tilt-card" data-depth="0.9">
+              <div class="float-card-icon icon-red">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+              </div>
+              <div class="float-card-details">
+                <span class="float-card-title">OVERDUE</span>
+                <span class="float-card-value text-red" id="heroStatOverdue">03</span>
+                <span class="float-card-sub"><i class="fa-solid fa-fire"></i> SLA Breached</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DASHBOARD KPI SECTION -->
+    <section class="section-container" id="dashboard">
+      <div class="section-header reveal-on-scroll">
+        <div>
+          <h2 class="section-title"><i class="fa-solid fa-chart-line text-cyan"></i> Operational Metrics</h2>
+          <p class="section-subtitle">Real-time breakdown of internal workloads vs. client bottlenecks</p>
+        </div>
+        <div class="live-pill">
+          <span class="pulse-green"></span> Live SLA Engine
+        </div>
+      </div>
+
+      <div class="kpi-grid">
+        <!-- KPI 1: WAITING FOR US -->
+        <div class="kpi-card tilt-card glass-panel reveal-on-scroll" data-kpi="waiting-us">
+          <div class="kpi-glow glow-cyan-bg"></div>
+          <div class="kpi-header">
+            <div class="kpi-icon-box icon-cyan">
+              <i class="fa-solid fa-reply-all"></i>
+            </div>
+            <span class="kpi-tag tag-cyan">Action Required</span>
+          </div>
+          <div class="kpi-body">
+            <span class="kpi-number text-cyan counter" data-target="5" id="kpiWaitingUs">0</span>
+            <h3 class="kpi-title">WAITING FOR US</h3>
+            <p class="kpi-desc">Requests assigned to internal team awaiting response or action.</p>
+          </div>
+          <div class="kpi-footer">
+            <span class="kpi-meta"><i class="fa-solid fa-bolt"></i> Priority queue active</span>
+          </div>
+        </div>
+
+        <!-- KPI 2: WAITING FOR CLIENT -->
+        <div class="kpi-card tilt-card glass-panel reveal-on-scroll" data-kpi="waiting-client">
+          <div class="kpi-glow glow-blue-bg"></div>
+          <div class="kpi-header">
+            <div class="kpi-icon-box icon-blue">
+              <i class="fa-solid fa-hourglass-half"></i>
+            </div>
+            <span class="kpi-tag tag-blue">SLA Timer Paused</span>
+          </div>
+          <div class="kpi-body">
+            <span class="kpi-number text-blue counter" data-target="8" id="kpiWaitingClient">0</span>
+            <h3 class="kpi-title">WAITING FOR CLIENT</h3>
+            <p class="kpi-desc">Awaiting feedback, information, or sign-off from the client.</p>
+          </div>
+          <div class="kpi-footer">
+            <span class="kpi-meta text-blue-light"><i class="fa-solid fa-circle-check"></i> Not counted as overdue</span>
+          </div>
+        </div>
+
+        <!-- KPI 3: UNASSIGNED -->
+        <div class="kpi-card tilt-card glass-panel reveal-on-scroll" data-kpi="unassigned">
+          <div class="kpi-glow glow-purple-bg"></div>
+          <div class="kpi-header">
+            <div class="kpi-icon-box icon-purple">
+              <i class="fa-solid fa-folder-open"></i>
+            </div>
+            <span class="kpi-tag tag-purple">Pending Routing</span>
+          </div>
+          <div class="kpi-body">
+            <span class="kpi-number text-purple counter" data-target="4" id="kpiUnassigned">0</span>
+            <h3 class="kpi-title">UNASSIGNED</h3>
+            <p class="kpi-desc">New intake requests waiting to be assigned to an engineer.</p>
+          </div>
+          <div class="kpi-footer">
+            <span class="kpi-meta"><i class="fa-solid fa-user-plus"></i> Auto-routing ready</span>
+          </div>
+        </div>
+
+        <!-- KPI 4: OVERDUE -->
+        <div class="kpi-card tilt-card glass-panel reveal-on-scroll" data-kpi="overdue">
+          <div class="kpi-glow glow-red-bg"></div>
+          <div class="kpi-header">
+            <div class="kpi-icon-box icon-red">
+              <i class="fa-solid fa-bell-concierge"></i>
+            </div>
+            <span class="kpi-tag tag-red">Critical SLA Alert</span>
+          </div>
+          <div class="kpi-body">
+            <span class="kpi-number text-red counter" data-target="3" id="kpiOverdue">0</span>
+            <h3 class="kpi-title">OVERDUE</h3>
+            <p class="kpi-desc">Internal requests that exceeded target SLA response deadline.</p>
+          </div>
+          <div class="kpi-footer">
+            <span class="kpi-meta text-red-light"><i class="fa-solid fa-triangle-exclamation"></i> Immediate triage required</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3D WORKFLOW SECTION -->
+    <section class="section-container" id="workflow">
+      <div class="section-header reveal-on-scroll">
+        <div>
+          <h2 class="section-title"><i class="fa-solid fa-arrows-spin text-purple"></i> 3D Lifecycle Pipeline</h2>
+          <p class="section-subtitle">Visual stage progression with automated SLA timer rules</p>
+        </div>
+        <div class="sla-notice-banner glass-panel">
+          <i class="fa-solid fa-shield-heart text-blue"></i>
+          <span><strong>Business Logic Rule:</strong> "Waiting on Client" status automatically pauses SLA timers & is explicitly segregated from Overdue items.</span>
+        </div>
+      </div>
+
+      <!-- 3D WORKFLOW STAGES CONTAINER -->
+      <div class="workflow-3d-wrapper glass-panel reveal-on-scroll">
+        
+        <!-- Connecting Line Overlay with Animated Energy Light Particle -->
+        <div class="workflow-connector-line">
+          <div class="energy-particle"></div>
+        </div>
+
+        <div class="workflow-stages-grid">
+          
+          <!-- Stage 1 -->
+          <div class="workflow-card tilt-card" data-stage="new">
+            <div class="stage-step-num">01</div>
+            <div class="stage-icon icon-cyan">
+              <i class="fa-solid fa-circle-plus"></i>
+            </div>
+            <h4 class="stage-title">NEW REQUEST</h4>
+            <p class="stage-desc">Logged into system & queued for initial review.</p>
+            <div class="stage-badge badge-cyan" id="stageCountNew">04 Requests</div>
+          </div>
+
+          <!-- Stage 2 -->
+          <div class="workflow-card tilt-card" data-stage="clarification">
+            <div class="stage-step-num">02</div>
+            <div class="stage-icon icon-purple">
+              <i class="fa-solid fa-clipboard-question"></i>
+            </div>
+            <h4 class="stage-title">NEEDS CLARIFICATION</h4>
+            <p class="stage-desc">Scoping requirements or missing technical details.</p>
+            <div class="stage-badge badge-purple" id="stageCountClarification">03 Requests</div>
+          </div>
+
+          <!-- Stage 3 -->
+          <div class="workflow-card tilt-card" data-stage="ready">
+            <div class="stage-step-num">03</div>
+            <div class="stage-icon icon-blue">
+              <i class="fa-solid fa-user-check"></i>
+            </div>
+            <h4 class="stage-title">READY TO ASSIGN</h4>
+            <p class="stage-desc">Fully scoped & awaiting resource assignment.</p>
+            <div class="stage-badge badge-blue" id="stageCountReady">04 Requests</div>
+          </div>
+
+          <!-- Stage 4 -->
+          <div class="workflow-card tilt-card" data-stage="progress">
+            <div class="stage-step-num">04</div>
+            <div class="stage-icon icon-cyan">
+              <i class="fa-solid fa-gears"></i>
+            </div>
+            <h4 class="stage-title">IN PROGRESS</h4>
+            <p class="stage-desc">Actively being worked on by internal team.</p>
+            <div class="stage-badge badge-cyan" id="stageCountProgress">05 Requests</div>
+          </div>
+
+          <!-- Stage 5: SPECIAL FOCUS -->
+          <div class="workflow-card tilt-card workflow-card-client" data-stage="waiting-client">
+            <div class="stage-step-num">05</div>
+            <div class="stage-icon icon-amber">
+              <i class="fa-solid fa-clock-rotate-left"></i>
+            </div>
+            <h4 class="stage-title">WAITING ON CLIENT</h4>
+            <p class="stage-desc">Pending client feedback or approval. <strong>SLA Paused.</strong></p>
+            <div class="stage-badge badge-amber" id="stageCountClient">08 Requests</div>
+            <div class="sla-paused-indicator">
+              <i class="fa-solid fa-circle-pause"></i> NOT OVERDUE
+            </div>
+          </div>
+
+          <!-- Stage 6 -->
+          <div class="workflow-card tilt-card" data-stage="done">
+            <div class="stage-step-num">06</div>
+            <div class="stage-icon icon-green">
+              <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <h4 class="stage-title">DONE</h4>
+            <p class="stage-desc">Completed, verified, & archived successfully.</p>
+            <div class="stage-badge badge-green" id="stageCountDone">12 Resolved</div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- REQUEST MANAGEMENT SECTION & 3D TABLE -->
+    <section class="section-container" id="requests">
+      <div class="section-header reveal-on-scroll">
+        <div>
+          <h2 class="section-title"><i class="fa-solid fa-table-list text-cyan"></i> Request Management Control</h2>
+          <p class="section-subtitle">Search, filter, assign, and update client request statuses in real time</p>
+        </div>
+
+        <div class="request-actions-bar">
+          <div class="view-toggle-group">
+            <button class="btn-toggle active" id="btnViewTable" title="Table View">
+              <i class="fa-solid fa-table-cells"></i> <span>Table</span>
+            </button>
+            <button class="btn-toggle" id="btnViewCards" title="Grid Cards View">
+              <i class="fa-solid fa-grip"></i> <span>Grid</span>
+            </button>
+          </div>
+          <button class="btn btn-primary magnetic-btn" id="btnOpenNewRequest2">
+            <i class="fa-solid fa-plus"></i> <span>New Request</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- SEARCH & FILTER TOOLBAR -->
+      <div class="filter-toolbar glass-panel reveal-on-scroll">
+        <div class="search-box">
+          <i class="fa-solid fa-magnifying-glass search-icon"></i>
+          <input type="text" id="searchInput" placeholder="Search requests by title, client, ID, or assignee..." autocomplete="off">
+          <button class="clear-btn" id="btnClearSearch" style="display:none;"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        <div class="filter-controls">
+          <div class="filter-group">
+            <label for="filterStatus"><i class="fa-solid fa-filter text-cyan"></i> Status:</label>
+            <select id="filterStatus" class="custom-select">
+              <option value="ALL">All Statuses</option>
+              <option value="WAITING_FOR_US">Waiting for Us</option>
+              <option value="WAITING_FOR_CLIENT">Waiting on Client</option>
+              <option value="UNASSIGNED">Unassigned</option>
+              <option value="OVERDUE">Overdue SLA</option>
+              <option value="New Request">New Request</option>
+              <option value="Needs Clarification">Needs Clarification</option>
+              <option value="Ready to Assign">Ready to Assign</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Done">Done</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label for="filterPriority"><i class="fa-solid fa-layer-group text-purple"></i> Priority:</label>
+            <select id="filterPriority" class="custom-select">
+              <option value="ALL">All Priorities</option>
+              <option value="Urgent">Urgent</option>
+              <option value="High">High</option>
+              <option value="Medium">Medium</option>
+              <option value="Low">Low</option>
+            </select>
+          </div>
+
+          <div class="filter-stats-summary" id="filterResultCount">
+            Showing 24 requests
+          </div>
+        </div>
+      </div>
+
+      <!-- 3D GLASS REQUEST TABLE VIEW -->
+      <div class="table-container glass-panel reveal-on-scroll" id="tableViewContainer">
+        <table class="request-3d-table">
+          <thead>
+            <tr>
+              <th>ID & Client</th>
+              <th>Request Title</th>
+              <th>Priority</th>
+              <th>Status</th>
+              <th>Assignee</th>
+              <th>SLA Status</th>
+              <th style="text-align: right;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="requestTableBody">
+            <!-- Dynamically populated via script.js -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- CARDS GRID VIEW (Alternative view) -->
+      <div class="cards-grid-container" id="cardsViewContainer" style="display: none;">
+        <!-- Dynamically populated via script.js -->
+      </div>
+
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer-section glass-panel">
+      <div class="footer-container">
+        <div class="footer-brand">
+          <span class="brand-name">Lala<span class="text-gradient">Flow</span></span>
+          <p class="footer-text">3D Operations SaaS for High-Velocity Teams</p>
+        </div>
+        <div class="footer-meta">
+          <span class="meta-tag"><i class="fa-solid fa-shield"></i> SLA Engine 3.0</span>
+          <span class="meta-tag"><i class="fa-solid fa-cubes"></i> 3D CSS + Three.js</span>
+          <span class="meta-tag"><i class="fa-solid fa-bolt"></i> Realtime Sync</span>
+        </div>
+      </div>
+    </footer>
+
+  </div> <!-- End App Wrapper -->
+
+
+  <!-- MODAL: NEW REQUEST -->
+  <div class="modal-backdrop" id="modalNewRequest">
+    <div class="modal-dialog glass-panel tilt-card">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <i class="fa-solid fa-circle-plus text-cyan"></i>
+          <h3>Create New Request</h3>
+        </div>
+        <button class="modal-close" id="btnCloseModalNewRequest"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <form id="formNewRequest">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="newClientName"><i class="fa-solid fa-building"></i> Client Name</label>
+            <input type="text" id="newClientName" class="form-input" placeholder="e.g. Acme Corp / Zenith Systems" required>
+          </div>
+
+          <div class="form-group">
+            <label for="newRequestTitle"><i class="fa-solid fa-heading"></i> Request Title</label>
+            <input type="text" id="newRequestTitle" class="form-input" placeholder="e.g. API Webhook Integration Setup" required>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="newPriority"><i class="fa-solid fa-triangle-exclamation"></i> Priority</label>
+              <select id="newPriority" class="form-input custom-select" required>
+                <option value="Medium">Medium</option>
+                <option value="High">High</option>
+                <option value="Urgent">Urgent</option>
+                <option value="Low">Low</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="newCategory"><i class="fa-solid fa-tag"></i> Category</label>
+              <select id="newCategory" class="form-input custom-select">
+                <option value="Integration">Integration</option>
+                <option value="Bug Fix">Bug Fix</option>
+                <option value="Custom Feature">Custom Feature</option>
+                <option value="Account Config">Account Config</option>
+                <option value="Security Audit">Security Audit</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="newDescription"><i class="fa-solid fa-align-left"></i> Description</label>
+            <textarea id="newDescription" class="form-input" rows="4" placeholder="Detailed description of the client's request..." required></textarea>
+          </div>
+
+          <div class="modal-info-box">
+            <i class="fa-solid fa-info-circle text-cyan"></i>
+            <span>New requests automatically enter the queue with status <strong>New Request</strong> and assignee <strong>Unassigned</strong>.</span>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-glass" id="btnCancelNewRequest">Cancel</button>
+          <button type="submit" class="btn btn-primary magnetic-btn">
+            <i class="fa-solid fa-paper-plane"></i> Submit Request
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+
+  <!-- MODAL: REQUEST DETAILS & STATUS UPDATER -->
+  <div class="modal-backdrop" id="modalRequestDetail">
+    <div class="modal-dialog glass-panel tilt-card modal-lg">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <span class="badge-req-id" id="detailReqId">#REQ-1001</span>
+          <h3 id="detailTitle">Request Details</h3>
+        </div>
+        <button class="modal-close" id="btnCloseModalDetail"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="modal-body detail-modal-body">
+        <div class="detail-grid">
+          <!-- Left Main Column -->
+          <div class="detail-main">
+            <div class="detail-section">
+              <label class="detail-label">Client</label>
+              <h4 id="detailClient" class="detail-client-name">Acme Software</h4>
+            </div>
+
+            <div class="detail-section">
+              <label class="detail-label">Description</label>
+              <p id="detailDesc" class="detail-desc-text">Full details of the request...</p>
+            </div>
+
+            <div class="detail-section">
+              <label class="detail-label">Lifecycle Timeline & SLA</label>
+              <div class="timeline-visual" id="detailTimeline">
+                <!-- Dynamically updated -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Sidebar Column -->
+          <div class="detail-sidebar glass-panel">
+            <div class="sidebar-item">
+              <label><i class="fa-solid fa-circle-dot"></i> Current Status</label>
+              <select id="detailStatusSelect" class="form-input custom-select status-select-highlight">
+                <option value="New Request">New Request</option>
+                <option value="Needs Clarification">Needs Clarification</option>
+                <option value="Ready to Assign">Ready to Assign</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Waiting on Client">Waiting on Client</option>
+                <option value="Done">Done</option>
+              </select>
+            </div>
+
+            <div class="sidebar-item">
+              <label><i class="fa-solid fa-user"></i> Assignee</label>
+              <select id="detailAssigneeSelect" class="form-input custom-select">
+                <option value="Unassigned">Unassigned</option>
+                <option value="Alex Rivera">Alex Rivera</option>
+                <option value="Sarah Chen">Sarah Chen</option>
+                <option value="David Miller">David Miller</option>
+                <option value="Elena Rostova">Elena Rostova</option>
+              </select>
+            </div>
+
+            <div class="sidebar-item">
+              <label><i class="fa-solid fa-flag"></i> Priority</label>
+              <span id="detailPriorityBadge" class="badge-priority priority-high">High</span>
+            </div>
+
+            <div class="sidebar-item">
+              <label><i class="fa-solid fa-clock"></i> SLA Status</label>
+              <div id="detailSlaBadge" class="sla-pill pill-ok"><i class="fa-solid fa-check"></i> Within SLA</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-glass" id="btnCloseDetailFooter">Close</button>
+        <button type="button" class="btn btn-primary magnetic-btn" id="btnSaveDetailChanges">
+          <i class="fa-solid fa-floppy-disk"></i> Save Changes
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Custom Script -->
+  <script src="script.js"></script>
+</body>
+</html>
